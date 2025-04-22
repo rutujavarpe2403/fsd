@@ -1,0 +1,71 @@
+Q. 1) Write angular JS by using ng-click directive to display an alert message after clicking the element.
+[10]
+Q. 2) Create a nodejs program to build your own module for reverse numbers and check number is
+palindrome or not. Use export statement and create a simple web server and display the result through
+module.
+[15] 
+
+
+Q1
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head>
+  <title>ng-click Example</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+</head>
+<body ng-controller="myCtrl">
+
+  <button ng-click="showAlert()">Click Me!</button>
+
+  <script>
+    var app = angular.module('myApp', []);
+    app.controller('myCtrl', function($scope) {
+      $scope.showAlert = function() {
+        alert("Button Clicked!");
+      };
+    });
+  </script>
+
+</body>
+</html>
+
+Q2
+// module.js
+
+// Function to reverse the number
+exports.reverseNumber = function(num) {
+  return num.toString().split('').reverse().join('');
+};
+
+// Function to check if the number is a palindrome
+exports.isPalindrome = function(num) {
+  const reversed = this.reverseNumber(num);
+  return num.toString() === reversed;
+};
+
+// server.js
+
+const express = require('express');
+const app = express();
+const { reverseNumber, isPalindrome } = require('./module'); // Importing functions from module.js
+
+const PORT = 3000;
+
+// Route to display the result
+app.get('/', (req, res) => {
+  const num = 12321; // Test number
+  const reversed = reverseNumber(num); // Reverse the number
+  const palindromeCheck = isPalindrome(num); // Check if it's palindrome
+
+  res.send(`
+    <h1>Number Analysis</h1>
+    <p>Original Number: ${num}</p>
+    <p>Reversed Number: ${reversed}</p>
+    <p>Is Palindrome: ${palindromeCheck ? 'Yes' : 'No'}</p>
+  `);
+});
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server is running at http://localhost:${PORT}`);
+});

@@ -1,0 +1,1456 @@
+slip 21
+
+1.
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head>
+  <title>Student Table</title>
+  <script src="angular.min.js"></script>
+  <style>
+    table, th, td { border: 1px solid black; border-collapse: collapse;}
+    th { background-color: #f2f2f2; }
+  </style>
+</head>
+<body ng-controller="studentCtrl">
+  <h2>Student Details</h2>
+  <table>
+    <tr>
+      <th>Roll No</th>
+      <th>Name</th>
+    </tr>
+    <tr ng-repeat="s in students">
+      <td>{{s.roll}}</td>
+      <td>{{s.name}}</td>
+    </tr>
+  </table>
+
+  <script>
+    angular.module("myApp", [])
+      .controller("studentCtrl", function($scope) {
+        $scope.students = [
+          { roll: 1, name: "Ravi" },
+          { roll: 2, name: "Anita" },
+          { roll: 3, name: "Karan" },
+          { roll: 4, name: "Pooja" },
+          { roll: 5, name: "Vikas" },
+          { roll: 6, name: "Sneha" },
+          { roll: 7, name: "Raj" },
+          { roll: 8, name: "Simran" },
+          { roll: 9, name: "Aman" },
+          { roll: 10, name: "Divya" }
+        ];
+      });
+  </script>
+</body>
+</html>
+2.
+const EventEmitter = require('events');
+const eventEmitter = new EventEmitter();
+const eventHandler = (eventData)=>{
+    console.log(`Event received: ${eventData}` );
+};
+
+eventEmitter.on('customEvent',eventHandler);
+console.log("Event-driven application started.....");
+const eventInterval = setInterval(()=>{
+    const timestamp = new Date().toLocaleTimeString();
+    console.log("Emittting events....");
+    eventEmitter.emit('customEvent',`triggered at ${timestamp} `);
+
+},2000);
+setTimeout(()=>{
+    console.log("REmoving event Listner...");
+    eventEmitter.off('customEvent',eventHandler);
+    clearInterval(eventInterval);
+    console.log("No event will be triggered");
+},2000);
+slip 20
+1.
+<!DOCTYPE html>
+<html ng-app>
+<head>
+  <title>AngularJS Directives Demo</title>
+  <script src="angular.min.js"></script>
+</head>
+<body>
+<h2>Directives Demo</h2>
+<div ng-init="firstName='MIT'; lastName='ACSC'">
+  <p>First Name: {{firstName}}</p>
+  <p>Last Name: {{lastName}}</p>
+</div>
+<p>Enter Name: <input ng-model="myname"></p>
+<p>Hello, {{myname}}</p>
+<div ng-init="students=['Ram','Amit','Shiv']">
+  <p>Students:</p>
+  <ul>
+    <li ng-repeat="s in students">{{s}}</li>
+  </ul>
+</div>
+<p>10 + 5 = <span ng-bind="10 + 5"></span></p>
+<p>Mobile No: <input ng-model="mobile"><br>
+My Mobile No is <span ng-bind="mobile"></span></p>
+</body>
+</html>
+2.
+const express = require('express');
+const { MongoClient } = require('mongodb');
+const app = express();
+const uri = "mongodb://127.0.0.1:27017";
+const client = new MongoClient(uri);
+
+app.get('/', (req, res) => {
+  res.send("Welcome to Student App");
+});
+
+// Create student (GET for easy testing)
+app.get('/add', async (req, res) => {
+  try {
+    await client.connect();
+    const db = client.db("college");
+    const collection = db.collection("students");
+    const data = { name: "Snehal", roll: 1 };
+    const result = await collection.insertOne(data);
+    res.send("Student added: " + result.insertedId);
+  } finally {
+    await client.close();
+  }
+});
+
+// Update student dynamically from query
+app.get('/update', async (req, res) => {
+  const { name, roll } = req.query;
+  if (!name || !roll) return res.send("Please provide both name and roll like ?name=Snehal&roll=3");
+
+  try {
+    await client.connect();
+    const db = client.db("college");
+    const collection = db.collection("students");
+
+    const result = await collection.updateOne(
+      { name: name },
+      { $set: { roll: parseInt(roll) } }
+    );
+    res.send(`Updated: ${result.modifiedCount} record(s)`);
+  } catch (err) {
+    res.send("Error: " + err);
+  } finally {
+    await client.close();
+  }
+});
+
+app.listen(3000, () => {
+  console.log("Server running at http://localhost:3000");
+});
+slip 18
+1.
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head>
+  <title>Show Page Location</title>
+  <script src="angular.min.js"></script>
+</head>
+<body ng-controller="MainController">
+
+  <h2>Current Page Location:</h2>
+  <p>{{ pageUrl }}</p>
+
+  <script>
+    var app = angular.module('myApp', []);
+    app.controller('MainController', function($scope, $location) {
+      $scope.pageUrl = $location.absUrl();
+    });
+  </script>
+
+</body>
+</html>
+2.
+const express = require('express');
+const { MongoClient } = require('mongodb');
+const app = express();
+
+// MongoDB connection URI
+const uri = "mongodb://127.0.0.1:27017";
+const client = new MongoClient(uri);
+
+app.get('/', async (req, res) => {
+    try {
+        await client.connect();
+        const db = client.db('shopdb'); // Your Database name
+        const collection = db.collection('products'); // Your Collection name
+
+        const data = await collection.find().toArray();
+        let html = `
+            <html>
+            <head>
+                <title>Product Details</title>
+        <style>table{border-collapse:collapse;}th,td{border:1px solid #000;}</style>
+            </head>
+            <body>
+                <h2>Product Details</h2>
+                <table>
+                    <tr>
+                        <th>Product ID</th>
+                        <th>Product Name</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                    </tr>`;
+
+        data.forEach(product => {
+            html += `
+                    <tr>
+                        <td>${product.productId}</td>
+                        <td>${product.productName}</td>
+                        <td>${product.category}</td>
+                        <td>${product.price}</td>
+                    </tr>`;
+        });
+
+        html += `
+                </table>
+            </body>
+            </html>`;
+
+        res.send(html);
+
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).send("An error occurred while fetching product details.");
+    } finally {
+        await client.close();
+    }
+});
+app.listen(8050);
+slip 17
+1.
+const { MongoClient } = require("mongodb");
+const uri = "mongodb://127.0.0.1:27017";
+const client = new MongoClient(uri);
+async function insertrecords() {
+    try {
+        console.log("Connecting to MongoDB...");
+        await client.connect();
+        console.log("MongoDB connection successful!");
+
+        const db = client.db("mydb"); 
+        const collection = db.collection("customer"); 
+
+        const record = [
+            { name: "snehal", email: "snehal@example.com" },
+            { name: "rutuja", email: "rutuja@example.com" },
+            { name: "rudra", email: "rudra@example.com" }
+        ];
+        const res = await collection.insertMany(record);
+        console.log("Records inserted:", res);
+    } catch (err) {
+        console.error("MongoDB operation failed:", err);
+    } finally {
+        await client.close();
+        console.log("Connection closed");
+    }
+}
+insertrecords();
+
+2.
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head>
+  <script src="angular.min.js"></script>
+</head>
+<body>
+
+  <div ng-controller="OneWayCtrl">
+    <h4>One-way</h4>
+    <p>{{msg}}</p>
+    <input type="text" value="{{msg}}">
+  </div>
+
+  <div ng-controller="TwoWayCtrl">
+    <h4>Two-way</h4>
+    <input ng-model="name">
+    <p>{{name}}</p>
+  </div>
+
+  <script>
+    angular.module('myApp', [])
+      .controller('OneWayCtrl', function($scope) {
+        $scope.msg = "Hello One-way";
+      })
+      .controller('TwoWayCtrl', function($scope) {
+        $scope.name = "John";
+      });
+  </script>
+
+</body>
+</html>
+ slip 16
+1.
+const { MongoClient } = require("mongodb");
+const uri = "mongodb://127.0.0.1:27017";
+const client = new MongoClient(uri);
+
+async function run() {
+    try {
+        await client.connect();
+        const db = client.db("mydb");
+        const collection = db.collection("bank");
+        const records = await collection.find().toArray();
+        console.log("All Records:", records);
+        const result = await collection.deleteOne({ name: "snehal" });
+
+        console.log("Delete result:", result);
+    } catch (err) {
+        console.error(err);
+    } finally {
+        await client.close();
+    }
+}
+run();
+2.
+const express = require('express');
+const { MongoClient } = require('mongodb');
+const app = express();
+const uri = "mongodb://127.0.0.1:27017";
+const client = new MongoClient(uri);
+app.use(express.urlencoded({ extended: true }));
+app.get('/register', (req, res) => {
+  res.send(`
+    <h2>User Registration</h2>
+    <form method="POST" action="/register">
+      Name: <input type="text" name="name" required><br><br>
+      Email: <input type="email" name="email" required><br><br>
+      <button type="submit">Register</button>
+    </form>
+  `);
+});
+app.post('/register', async (req, res) => {
+  const { name, email } = req.body;
+
+  try {
+    await client.connect();
+    const db = client.db('userdb'); 
+    const collection = db.collection('users'); 
+
+    await collection.insertOne({ name, email });
+
+    res.send(`
+        <h3>Registered successfully!</h3>Name: ${name}<br>Email: ${email}`);
+  } catch (err) {
+    console.error('Error:', err);
+    res.status(500).send('Error saving user data.');
+  } finally {
+    await client.close(); 
+  }
+});
+app.listen(5000);
+slip 15
+1.
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+const fp = path.join(__dirname, 'index.html');
+const server = http.createServer((req, res) => {
+    fs.readFile(fp, 'utf8', (err, data) => {
+        if (err) {
+            res.writeHead(500, { 'Content-Type': 'text/plain' });
+            res.end('Error loading file');
+        } else {
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.end(data);
+        }
+    });
+}).listen(3000);
+
+2.
+const express = require('express');
+const { MongoClient } = require('mongodb');
+const app = express();
+const uri = "mongodb://127.0.0.1:27017"; 
+const client = new MongoClient(uri);
+app.get('/', async (req, res) => {
+    try {
+        await client.connect();
+        const db = client.db('mydb'); // Your DB name
+        const collection = db.collection('employees'); // Your Collection name
+        const data = await collection.find().toArray();
+        let html = `
+            <html>
+            <head>
+                <title>Employee Details</title>
+        <style>table{border-collapse:collapse;}th,td{border:1px solid #000;}</style>
+            </head>
+            <body>
+                <h2>Employee List</h2>
+                <table>
+                    <tr>
+                        <th>Name</th>
+                        <th>Position</th>
+                        <th>Salary</th>
+                    </tr>`;
+
+        data.forEach(emp => {
+            html += `
+                    <tr>
+                        <td>${emp.name}</td>
+                        <td>${emp.position}</td>
+                        <td>${emp.salary}</td>
+                    </tr>`;
+        });
+        html += `</table></body></html>`;
+        res.send(html);
+    } catch (err) {
+        res.send(err);
+    } finally {
+        await client.close();
+    }
+});
+app.listen(9000);
+slip 14
+1.
+const http = require('http');
+const fs = require('fs');
+const url = require('url');
+http.createServer((req, res) => {
+  const q = url.parse(req.url, true);
+  if (req.url === '/') {
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(`
+      <form action="/submit" method="get">
+        File 1: <input type="text" name="file1"><br>
+        File 2: <input type="text" name="file2"><br>
+        <button type="submit">Append</button>
+      </form>
+    `);
+  }
+  else if (q.pathname === '/submit') {
+    const f1 = q.query.file1;
+    const f2 = q.query.file2;
+    fs.readFile(f1, 'utf8', (err, data1) => {
+      if (err) return res.end('Cannot read File 1');
+      fs.appendFile(f2, data1, (err) => {
+        if (err) return res.end('Cannot write to File 2');
+        res.end('Content of File 1 appended to File 2 successfully!');
+      });
+    });
+  }
+}).listen(2400);
+console.log('Server running at http://localhost:2400');
+2.
+<!DOCTYPE html>
+<html ng-app="studentApp">
+<head>
+  <meta charset="utf-8">
+  <title>Marks Calculator</title>
+  <script src="angular.min.js"></script>
+</head>
+<body ng-controller="MarksController">
+
+  <h2>Student Marks</h2>
+
+  <form ng-submit="calculateMarks()">
+    <input type="number" ng-model="marks.sub1" placeholder="Sub 1" required /><br>
+    <input type="number" ng-model="marks.sub2" placeholder="Sub 2" required /><br>
+    <input type="number" ng-model="marks.sub3" placeholder="Sub 3" required /><br>
+    <input type="number" ng-model="marks.sub4" placeholder="Sub 4" required /><br>
+    <input type="number" ng-model="marks.sub5" placeholder="Sub 5" required /><br>
+    <button type="submit">Calculate</button>
+  </form>
+
+  <h3>Total: {{totalMarks}}</h3>
+  <h3>Average: {{averageMarks}}</h3>
+
+  <script>
+    angular.module('studentApp', [])
+      .service('MarksService', function() {
+        this.caltotal = function(marks) {
+          return marks.sub1 + marks.sub2 + marks.sub3 + marks.sub4 + marks.sub5;
+        };
+        this.calavg = function(total) {
+          return total / 5;
+        };
+      })
+      .controller('MarksController', function($scope, MarksService) {
+        $scope.marks = {}; // Initialize marks object
+        $scope.calculateMarks = function() {
+          var total = MarksService.caltotal($scope.marks);
+          $scope.totalMarks = total;
+          $scope.averageMarks = MarksService.calavg(total);
+        };
+      });
+  </script>
+</body>
+</html>
+slip 13
+1.
+const EventEmitter = require('events');
+const numberEmitter = new EventEmitter();
+
+numberEmitter.on('even', (num) => {
+  console.log(`${num} is even`);
+});
+
+numberEmitter.on('odd', (num) => {
+  console.log(`${num} is odd`);
+});
+      for (let i = 1; i <= 200; i++) {
+        if (i % 2 === 0) {
+          numberEmitter.emit('even', i);
+        } else {
+          numberEmitter.emit('odd', i);
+        }
+      }
+  2.
+const express = require('express');
+const { MongoClient } = require('mongodb');
+const app = express();
+
+// MongoDB connection URI
+const uri = "mongodb://127.0.0.1:27017";
+const client = new MongoClient(uri);
+
+app.get('/', async (req, res) => {
+    try {
+        await client.connect();
+        const db = client.db('bankdb'); // Your Database name
+        const collection = db.collection('banks'); // Your Collection name
+
+        const data = await collection.find().toArray();
+
+        // Build HTML
+        let html = `
+            <html>
+            <head>
+                <title>Bank Details</title>
+              <style>table{border-collapse:collapse;}th,td{border:1px solid #000;}</style>
+            </head>
+            <body>
+                <h2>Bank Details</h2>
+                <table>
+                    <tr>
+                        <th>Bank No</th>
+                        <th>Bank Name</th>
+                        <th>Address</th>
+                        <th>IFSC Code</th>
+                    </tr>`;
+
+        data.forEach(bank => {
+            html += `
+                    <tr>
+                        <td>${bank.bankNo}</td>
+                        <td>${bank.bankName}</td>
+                        <td>${bank.address}</td>
+                        <td>${bank.ifscCode}</td>
+                    </tr>`;
+        });
+
+        html += `
+                </table>
+            </body>
+            </html>`;
+
+        res.send(html);
+
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).send("An error occurred while fetching bank details.");
+    } finally {
+        await client.close();
+    }
+});
+
+app.listen(8080);
+slip 12
+1.
+const http = require('http');
+const fs = require('fs'); 
+http.createServer((req, res) => {
+    fs.readFile("a.txt", "utf-8", (err, data) => {
+        if (err) {
+            res.writeHead(404, { 'Content-Type': 'text/plain' });
+            res.end("404 error");
+        } else {
+            res.writeHead(200, { 'Content-Type': 'text/plain' });
+            res.end(data);
+        }
+    });
+}).listen(3000);
+2.
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head>
+    <meta charset="UTF-8">
+    <title>Product Form</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <style>
+        .error { color: red; }
+        .success { color: green; font-weight: bold; }
+    </style>
+</head>
+<body ng-controller="myCtrl">
+
+    <h2>Product Entry Form</h2>
+
+    <form name="myForm" ng-submit="save()" novalidate>
+
+        <!-- Product Name -->
+        <label>Product Name:</label><br>
+        <input type="text" name="pname" ng-model="pname"
+               ng-pattern="/^[a-zA-Z ]*$/"
+               required>
+        <div class="error" ng-show="myForm.pname.$touched && myForm.pname.$invalid">
+            <span ng-show="myForm.pname.$error.required">Name is required.</span>
+            <span ng-show="myForm.pname.$error.pattern">Only letters and spaces allowed.</span>
+        </div>
+        <br>
+
+        <!-- Product Price -->
+        <label>Price (₹):</label><br>
+        <input type="number" name="pprice" ng-model="pprice"
+               min="100" max="10000"
+               required>
+        <div class="error" ng-show="myForm.pprice.$touched && myForm.pprice.$invalid">
+            <span ng-show="myForm.pprice.$error.required">Price is required.</span>
+            <span ng-show="myForm.pprice.$error.min || myForm.pprice.$error.max">
+                Price must be between ₹100 and ₹10,000.
+            </span>
+        </div>
+        <br>
+
+        <button type="submit" ng-disabled="myForm.$invalid">Add Product</button>
+    </form>
+
+    <p class="success" ng-show="message">Product added successfully!</p>
+
+    <script>
+        var app = angular.module("myApp", []);
+        app.controller("myCtrl", function($scope) {
+            $scope.pname = "";
+            $scope.pprice = "";
+            $scope.message = false;
+
+            $scope.save = function() {
+                if ($scope.myForm.$valid) {
+                    $scope.message = true;
+                    $scope.pname = "";
+                    $scope.pprice = "";
+                    $scope.myForm.$setPristine();
+                    $scope.myForm.$setUntouched();
+                }
+            };
+        });
+    </script>
+</body>
+</html>
+slip 11
+1.
+function add(a,b){
+    return a+b;
+}
+function sub(a,b){
+    return a-b;
+}
+function multi(a,b){
+    return a*b;
+}
+function div(a,b){
+    return a/b;
+}
+module.exports={
+    add,
+    sub,
+    multi,
+    div
+};
+
+const http=require('http');
+const fs=require('./module1');
+const a=5;
+const b=10;
+http.createServer((req,res)=>{
+    res.write('addition is:'+fs.add(a,b)+'\n');
+    
+    res.write('sub is:'+fs.sub(a,b)+'\n');
+    res.write('multi is:'+fs.multi(a,b)+'\n');
+    res.write('div is:'+fs.div(a,b)+'\n');
+   res.end();
+}).listen(2006);
+2.
+<!DOCTYPE html>
+<html ng-app="validationApp">
+<head>
+  <meta charset="utf-8">
+  <title>Simple Validation SPA</title>
+  <script src="angular.min.js"></script>
+</head>
+<body ng-controller="MainController">
+  <h2>User Form</h2>
+  <form ng-submit="validate()">
+    Name:
+    <input type="text" ng-model="user.name"><br><br>
+    Mobile Number:
+    <input type="text" ng-model="user.mobile"><br><br>
+    Pin Code:
+    <input type="text" ng-model="user.pincode"><br><br>
+    Email:
+    <input type="text" ng-model="user.email"><br><br>
+    Address:
+    <input type="text" ng-model="user.address"><br><br>
+    <button type="submit">Submit</button>
+  </form>
+
+  <p style="color:green" ng-show="message">{{message}}</p>
+
+  <script>
+    angular.module('validationApp', [])
+    .controller('MainController', function($scope) {
+      $scope.user = {};
+      $scope.message = "";
+
+      $scope.validate = function() {
+        const name = $scope.user.name || "";
+        const mobile = $scope.user.mobile || "";
+        const pincode = $scope.user.pincode || "";
+        const email = $scope.user.email || "";
+        const address = $scope.user.address || "";
+
+        if (!/^[a-zA-Z\s]+$/.test(name)) {
+          alert("Name should contain characters only.");
+          return;
+        }
+        if (!/^\d{10}$/.test(mobile)) {
+          alert("Mobile number should be 10 digits.");
+          return;
+        }
+        if (!/^\d{6}$/.test(pincode)) {
+          alert("Pin code should be 6 digits.");
+          return;
+        }
+        if ((email.match(/@/g) || []).length !== 1 || (email.match(/\./g) || []).length !== 1) {
+          alert("Email must contain only one '@' and one '.'");
+          return;
+        }
+        if (address.trim() !== "SPPU M.Sc. Computer Science Syllabus 2023-24") {
+          alert("Address must be: SPPU M.Sc. Computer Science Syllabus 2023-24");
+          return;
+        }
+
+        $scope.message = "Validation successful!";
+      };
+    });
+  </script>
+</body>
+</html>
+slip 10
+1.
+const str="Hello world";
+const newstr=str.toUpperCase();
+console.log(newstr);
+2.
+<!DOCTYPE html>
+<html ng-app="validationApp">
+<head>
+  <meta charset="utf-8">
+  <title>Username Validation SPA</title>
+  <script src="angular.min.js"></script>
+</head>
+<body ng-controller="MainController">
+  <h2>Login Form</h2>
+  <form ng-submit="validate()">
+    Username:
+    <input type="text" ng-model="user.username" /><br><br>
+    Password:
+    <input type="password" ng-model="user.password" /><br><br>
+    <button type="submit">Submit</button>
+  </form>
+  <p style="color:green" ng-show="message === 'Valid username'">{{message}}</p>
+  <script>
+    angular.module('validationApp', [])
+    .controller('MainController', function($scope) {
+      $scope.user = {};
+      $scope.validate = function() {
+        const username = $scope.user.username || '';
+        const password = $scope.user.password || '';
+
+        if (username.trim() === '') {
+          alert("Enter username");
+          return;
+        }
+        if (username.length < 3) {
+          alert("Username is too short");
+          return;
+        }
+        if (password.length < 8) {
+          alert("Password must be at least 8 characters");
+          return;
+        }
+        $scope.message = "Valid username";
+      };
+    });
+  </script>
+</body>
+</html>
+slip 8
+1.
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head>
+  <title>M.Sc (CS) Sem-II Syllabus</title>
+  <script src="angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-route.min.js"></script>
+  <script>
+    angular.module("myApp", ["ngRoute"])
+    .config(function($routeProvider) {
+      $routeProvider
+        .when("/", { template: "<h2>Welcome!</h2><p>Click a subject to view syllabus.</p>" })
+        .when("/ds", { template: "<h2>Data Structures</h2><p>Stacks, Queues, Trees, Graphs</p>" })
+        .when("/os", { template: "<h2>Operating Systems</h2><p>Processes, Scheduling, Memory</p>" })
+        .when("/dbms", { template: "<h2>DBMS</h2><p>SQL, Normalization, Transactions</p>" });
+    });
+  </script>
+</head>
+<body>
+
+  <h1>M.Sc (CS) Sem-II</h1>
+
+  <p>
+    <a href="#!/">Home</a> 
+    <a href="#!/ds">Data Structures</a> 
+    <a href="#!/os">Operating Systems</a> 
+    <a href="#!/dbms">DBMS</a>
+  </p>
+
+  <div ng-view></div>
+
+</body>
+</html>
+2.
+const { MongoClient } = require("mongodb");
+const uri = "mongodb://127.0.0.1:27017";
+const client = new MongoClient(uri);
+async function run() {
+    try {
+        await client.connect();
+        const db = client.db("mydb");
+        const collection = db.collection("customer");
+        const allCustomers = await collection.find().toArray();
+        console.log("All Customers:");
+        console.log(allCustomers);
+        const cust = await collection.find({ name: /^A/i }).toArray();
+        console.log("\nCustomers whose name starts with 'A':",cust);
+    } catch (err) {
+        console.error("Error:", err);
+    } finally {
+        await client.close();
+    }
+}
+run();
+slip 7
+1.
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head>
+  <title>Student Table</title>
+  <script src="angular.min.js"></script>
+  <style>
+    table, th, td { border: 1px solid black; border-collapse: collapse;}
+    th { background-color: #f2f2f2; }
+  </style>
+</head>
+<body ng-controller="studentCtrl">
+  <h2>Student Details</h2>
+  <table>
+    <tr>
+      <th>Roll No</th>
+      <th>Name</th>
+    </tr>
+    <tr ng-repeat="s in students">
+      <td>{{s.roll}}</td>
+      <td>{{s.name}}</td>
+    </tr>
+  </table>
+
+  <script>
+    angular.module("myApp", [])
+      .controller("studentCtrl", function($scope) {
+        $scope.students = [
+          { roll: 1, name: "Ravi" },
+          { roll: 2, name: "Anita" },
+          { roll: 3, name: "Karan" },
+          { roll: 4, name: "Pooja" },
+          { roll: 5, name: "Vikas" },
+          { roll: 6, name: "Sneha" },
+          { roll: 7, name: "Raj" },
+          { roll: 8, name: "Simran" },
+          { roll: 9, name: "Aman" },
+          { roll: 10, name: "Divya" }
+        ];
+      });
+  </script>
+</body>
+</html>
+
+2.
+const express = require('express');
+const path = require('path');
+const app = express();
+app.get('/download', (req, res) => {
+  const fp = path.join(__dirname, 'sample.txt'); 
+  res.download(fp, 'yourfile.txt', (err) => {
+    if (err) {
+      console.error('Download error:', err);
+      res.status(500).send('File download failed.');
+    }
+  });
+});
+app.get('/', (req, res) => {
+  res.send(`
+    <h2>Download File</h2>
+    <a href="/download">Click here to download the file</a>
+  `);
+});
+app.listen(3000);
+slip 6
+1.
+const { MongoClient } = require("mongodb");
+
+const uri = "mongodb://127.0.0.1:27017"; // MongoDB connection URI
+const client = new MongoClient(uri);
+
+async function insertRecords() {
+    try {
+        console.log("Connecting to MongoDB...");
+        await client.connect();
+        console.log("MongoDB connection successful!");
+
+        // Use 'movie' database
+        const db = client.db("movie");
+
+        // Create or access 'movies' collection
+        const collection = db.collection("movies");
+
+        // Movie documents to insert
+        const records = [
+            { title: "Inception", director: "Christopher Nolan", year: 2010 },
+            { title: "The Matrix", director: "The Wachowskis", year: 1999 },
+            { title: "Interstellar", director: "Christopher Nolan", year: 2014 }
+        ];
+
+        // Insert records into the collection
+        const res = await collection.insertMany(records);
+        console.log("Records inserted:", res.insertedCount);
+    } catch (err) {
+        console.error("MongoDB operation failed:", err);
+    } finally {
+        await client.close();
+        console.log("Connection closed");
+    }
+}
+
+insertRecords();
+2.
+const EventEmitter = require('events');
+const eventEmitter = new EventEmitter();
+const eventHandler = (eventData)=>{
+    console.log(`Event received: ${eventData}` );
+};
+
+eventEmitter.on('customEvent',eventHandler);
+console.log("Event-driven application started.....");
+const eventInterval = setInterval(()=>{
+    const timestamp = new Date().toLocaleTimeString();
+    console.log("Emittting events....");
+    eventEmitter.emit('customEvent',`triggered at ${timestamp} `);
+
+},2000);
+setTimeout(()=>{
+    console.log("REmoving event Listner...");
+    eventEmitter.off('customEvent',eventHandler);
+    clearInterval(eventInterval);
+    console.log("No event will be triggered");
+},2000);
+
+
+slip 5
+1.
+const { MongoClient } = require("mongodb");
+
+const uri = "mongodb://127.0.0.1:27017"; // MongoDB connection URI
+const client = new MongoClient(uri);
+
+async function insertRecords() {
+    try {
+        console.log("Connecting to MongoDB...");
+        await client.connect();
+        console.log("MongoDB connection successful!");
+
+        // Use 'college' database
+        const db = client.db("college");
+
+        // Create or access 'students' collection
+        const collection = db.collection("students");
+
+        // Student documents to insert
+        const records = [
+            { name: "Snehal", email: "snehal@example.com", course: "Computer Science" },
+            { name: "Rutuja", email: "rutuja@example.com", course: "Electronics" },
+            { name: "Rudra", email: "rudra@example.com", course: "Mechanical" }
+        ];
+
+        // Insert records into the collection
+        const res = await collection.insertMany(records);
+        console.log("Records inserted:", res.insertedCount);
+    } catch (err) {
+        console.error("MongoDB operation failed:", err);
+    } finally {
+        await client.close();
+        console.log("Connection closed");
+    }
+}
+
+insertRecords();
+2.
+• module.js file:
+exports.getDateTime = () => {
+const currentDate = new Date();
+return {
+date: currentDate.toLocaleDateString(),
+time: currentDate.toLocaleTimeString()
+};
+};
+• server.js file:
+const http = require('http');
+const { getDateTime } = require('./module');
+http.createServer((req, res) => {
+res.writeHead(200, { 'Content-Type': 'text/html' });
+const { date, time } = getDateTime();
+res.write(`Current Date: ${date} <br>`);
+res.write(`Current Time: ${time} <br>`);
+res.end();
+}).listen(7777, () => {
+console.log('Server running at localhost:7777');
+});
+  
+
+slip 4
+1.
+const http = require('http');
+const qs = require('querystring');
+
+http.createServer((req, res) => {
+  if (req.method === 'GET') {
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.end(`
+      <form method="POST">
+        <input name="a" placeholder="String 1" />
+        <input name="b" placeholder="String 2" />
+        <button type="submit">Concat</button>
+      </form>
+    `);
+  } else if (req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+      const { a, b } = qs.parse(body);
+      res.writeHead(200, {'Content-Type': 'text/html'});
+      res.end(`<h2>Result: ${a + b}</h2><a href="/">Back</a>`);
+    });
+  }
+}).listen(2000);
+2.
+const { MongoClient } = require("mongodb");
+const uri = "mongodb://127.0.0.1:27017";
+const client = new MongoClient(uri);
+async function insertrecords() {
+    try {
+        console.log("Connecting to MongoDB...");
+        await client.connect();
+        console.log("MongoDB connection successful!");
+
+        const db = client.db("mydb"); 
+        const collection = db.collection("customer"); 
+
+        const record = [
+            { name: "snehal", email: "snehal@example.com" },
+            { name: "rutuja", email: "rutuja@example.com" },
+            { name: "rudra", email: "rudra@example.com" }
+        ];
+        const res = await collection.insertMany(record);
+        console.log("Records inserted:", res);
+    } catch (err) {
+        console.error("MongoDB operation failed:", err);
+    } finally {
+        await client.close();
+        console.log("Connection closed");
+    }
+}
+insertrecords();
+  
+slip 3
+
+
+1.
+const http = require('http');
+http.createServer((req, res) => {
+    res.end("Hello World");
+}).listen(9999);
+
+2.
+const express = require('express');
+const app = express();
+app.use(express.urlencoded({ extended: true }));
+app.get('/register', (req, res) => {
+  res.send(`
+    <h2>Student Registration</h2>
+    <form method="POST" action="/register">
+      Name: <input type="text" name="name"><br><br>
+      Email: <input type="email" name="email"><br><br>
+      <button type="submit">Register</button>
+    </form>
+  `);
+});
+app.post('/register', (req, res) => {
+  const { name, email } = req.body;
+  res.send(`<h3>Registered successfully!</h3>Name: ${name}<br>Email: ${email}`);
+});
+
+
+app.listen(5000, () => {
+  console.log('Visit http://localhost:3000/register');
+});
+
+
+
+slip 2
+1.
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head>
+  <title>Current Date and Time</title>
+  <script src="angular.min.js"></script>
+</head>
+<body ng-controller="timeCtrl">
+  <h2>Current Date and Time</h2>
+  <p>{{ currentTime }}</p>
+  <script>
+    angular.module("myApp", [])
+      .controller("timeCtrl", function($scope, $interval) {
+        function updateTime() {
+          $scope.currentTime = new Date().toLocaleString();
+        }
+        updateTime(); 
+        $interval(updateTime, 1000);
+      });
+  </script>
+</body>
+</html>
+2.
+const { MongoClient } = require("mongodb");
+const uri = "mongodb://127.0.0.1:27017";
+const client = new MongoClient(uri);
+async function run() {
+    try {
+        await client.connect();
+        const db = client.db("mydb"); // Database name
+        const collection = db.collection("Teacher"); // Collection name
+        const allRecords = await collection.find().toArray();
+        console.log("All Teacher Records:",allRecords);
+        const highSalary = await collection.find({ salary: { $gt: 20000 } }).toArray();
+        console.log("\nTeachers with Salary > 20000:",highSalary);
+    } catch (err) {
+        console.error("Error:", err);
+    } finally {
+        await client.close();
+    }
+}
+run();
+
+Slip 1
+Q. 1) Create a Node.js file using server that will convert the output "Full Stack!" into reverse string, upper
+case and lower case.
+ [10]
+Q. 2) Create an HTML form using AngularJS that contain the Student Registration details and validate
+Student first and last name as it should not contain other than alphabets and age should be between 18 to 50
+and display greeting message depending on current time using ng-show.
+
+ 
+Q1
+const http = require('http');
+
+// The original text
+const text = "Full Stack!";
+
+// Create the server
+const server = http.createServer((req, res) => {
+    if (req.url === "/") {
+        // Do string changes
+        const reversed = text.split('').reverse().join('');
+        const upper = text.toUpperCase();
+        const lower = text.toLowerCase();
+
+        // Send the result
+        res.writeHead(200, { "Content-Type": "text/plain" });
+        res.write("Original: " + text + "\n");
+        res.write("Reversed: " + reversed + "\n");
+        res.write("Uppercase: " + upper + "\n");
+        res.write("Lowercase: " + lower + "\n");
+        res.end();
+    } else {
+        res.writeHead(404, { "Content-Type": "text/plain" });
+        res.end("Page not found");
+    }
+});
+
+// Start server on port 3000
+server.listen(3000, () => {
+    console.log("Server running at http://localhost:3000");
+});
+
+
+
+Q2
+<!DOCTYPE html>
+<html ng-app="studentApp">
+<head>
+    <title>Student Registration</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <style>
+        .error { color: red; }
+        input.ng-invalid.ng-touched { border-color: red; }
+    </style>
+</head>
+<body ng-controller="FormController">
+
+    <h2>Student Registration Form</h2>
+
+    <!-- Greeting based on current time -->
+    <h3 ng-show="hour < 12">Good Morning!</h3>
+    <h3 ng-show="hour >= 12 && hour < 17">Good Afternoon!</h3>
+    <h3 ng-show="hour >= 17">Good Evening!</h3>
+
+    <form name="studentForm" novalidate>
+
+        <!-- First Name -->
+        <label>First Name:</label>
+        <input type="text" name="firstName" ng-model="student.firstName" ng-pattern="/^[a-zA-Z]*$/" required />
+        <span class="error" ng-show="studentForm.firstName.$touched && studentForm.firstName.$invalid">
+            Only alphabets allowed
+        </span>
+        <br><br>
+
+        <!-- Last Name -->
+        <label>Last Name:</label>
+        <input type="text" name="lastName" ng-model="student.lastName" ng-pattern="/^[a-zA-Z]*$/" required />
+        <span class="error" ng-show="studentForm.lastName.$touched && studentForm.lastName.$invalid">
+            Only alphabets allowed
+        </span>
+        <br><br>
+
+        <!-- Age -->
+        <label>Age:</label>
+        <input type="number" name="age" ng-model="student.age" min="18" max="50" required />
+        <span class="error" ng-show="studentForm.age.$touched && studentForm.age.$invalid">
+            Age must be between 18 and 50
+        </span>
+        <br><br>
+
+        <!-- Submit Button -->
+        <button type="submit" ng-disabled="studentForm.$invalid">Register</button>
+
+    </form>
+
+    <script>
+        angular.module('studentApp', [])
+        .controller('FormController', function($scope) {
+            // Get current hour
+            var now = new Date();
+            $scope.hour = now.getHours();
+
+            // Student model
+            $scope.student = {
+                firstName: '',
+                lastName: '',
+                age: null
+            };
+        });
+    </script>
+
+</body>
+</html>
+
+
+
+
+Q. 1) Write angular JS by using ng-click directive to display an alert message after clicking the element.
+[10]
+Q. 2) Create a nodejs program to build your own module for reverse numbers and check number is
+palindrome or not. Use export statement and create a simple web server and display the result through
+module.
+[15] 
+
+
+Q1
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head>
+  <title>ng-click Example</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+</head>
+<body ng-controller="myCtrl">
+
+  <button ng-click="showAlert()">Click Me!</button>
+
+  <script>
+    var app = angular.module('myApp', []);
+    app.controller('myCtrl', function($scope) {
+      $scope.showAlert = function() {
+        alert("Button Clicked!");
+      };
+    });
+  </script>
+
+</body>
+</html>
+
+Q2
+// module.js
+
+// Function to reverse the number
+exports.reverseNumber = function(num) {
+  return num.toString().split('').reverse().join('');
+};
+
+// Function to check if the number is a palindrome
+exports.isPalindrome = function(num) {
+  const reversed = this.reverseNumber(num);
+  return num.toString() === reversed;
+};
+
+// server.js
+
+const express = require('express');
+const app = express();
+const { reverseNumber, isPalindrome } = require('./module'); // Importing functions from module.js
+
+const PORT = 3000;
+
+// Route to display the result
+app.get('/', (req, res) => {
+  const num = 12321; // Test number
+  const reversed = reverseNumber(num); // Reverse the number
+  const palindromeCheck = isPalindrome(num); // Check if it's palindrome
+
+  res.send(`
+    <h1>Number Analysis</h1>
+    <p>Original Number: ${num}</p>
+    <p>Reversed Number: ${reversed}</p>
+    <p>Is Palindrome: ${palindromeCheck ? 'Yes' : 'No'}</p>
+  `);
+});
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server is running at http://localhost:${PORT}`);
+});
+
+Q. 1) Using node js create an Employee Registration Form validation. [10]
+
+Q. 2) Write an AngularJS program that takes two numbers from the user and apply a service (mathOperation)
+for performing basic arithmetic operations (addition and multiplication). Use a separate module with a
+service to perform these operations and display the results on the web page.
+
+
+Q1
+
+const express = require('express');
+const bodyParser = require('body-parser');
+const app = express();
+
+// Middleware
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Serve HTML Form
+app.get('/', (req, res) => {
+  res.send(`
+    <h2>Employee Registration Form</h2>
+    <form action="/register" method="POST">
+      Name: <input type="text" name="name" required /><br><br>
+      Email: <input type="email" name="email" required /><br><br>
+      Age: <input type="number" name="age" required /><br><br>
+      <button type="submit">Register</button>
+    </form>
+  `);
+});
+
+// Handle Form Submission
+app.post('/register', (req, res) => {
+  const { name, email, age } = req.body;
+
+  if (!/^[A-Za-z ]+$/.test(name)) {
+    return res.send('Invalid name: only alphabets allowed');
+  }
+
+  if (isNaN(age) || age < 18 || age > 60) {
+    return res.send('Invalid age: must be between 18 and 60');
+  }
+
+  res.send(`<h3>Employee Registered Successfully!</h3>
+            <p>Name: ${name}</p>
+            <p>Email: ${email}</p>
+            <p>Age: ${age}</p>`);
+});
+
+// Start Server
+app.listen(3000, () => {
+  console.log('Server running at http://localhost:3000');
+});
+
+
+Q2
+<!DOCTYPE html>
+<html ng-app="mathApp">
+<head>
+  <title>Math Operations with AngularJS</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+</head>
+<body ng-controller="MathController">
+
+  <h2>Math Operations</h2>
+
+  <p>Enter First Number: <input type="number" ng-model="num1"></p>
+  <p>Enter Second Number: <input type="number" ng-model="num2"></p>
+
+  <button ng-click="calculate()">Calculate</button>
+
+  <p>Addition: {{ result.add }}</p>
+  <p>Multiplication: {{ result.multiply }}</p>
+
+  <script>
+    // Define the module
+    var app = angular.module('mathApp', []);
+
+    // Define the service
+    app.service('mathOperation', function() {
+      this.add = function(a, b) {
+        return a + b;
+      };
+      this.multiply = function(a, b) {
+        return a * b;
+      };
+    });
+
+    // Define the controller
+    app.controller('MathController', function($scope, mathOperation) {
+      $scope.result = { add: 0, multiply: 0 };
+
+      $scope.calculate = function() {
+        var a = parseFloat($scope.num1);
+        var b = parseFloat($scope.num2);
+
+        $scope.result.add = mathOperation.add(a, b);
+        $scope.result.multiply = mathOperation.multiply(a, b);
+      };
+    });
+  </script>
+
+</body>
+</html>
+

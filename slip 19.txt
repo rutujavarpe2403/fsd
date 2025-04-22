@@ -1,0 +1,102 @@
+Q. 1) Using node js create an Employee Registration Form validation. [10]
+
+Q. 2) Write an AngularJS program that takes two numbers from the user and apply a service (mathOperation)
+for performing basic arithmetic operations (addition and multiplication). Use a separate module with a
+service to perform these operations and display the results on the web page.
+
+
+Q1
+
+const express = require('express');
+const bodyParser = require('body-parser');
+const app = express();
+
+// Middleware
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Serve HTML Form
+app.get('/', (req, res) => {
+  res.send(`
+    <h2>Employee Registration Form</h2>
+    <form action="/register" method="POST">
+      Name: <input type="text" name="name" required /><br><br>
+      Email: <input type="email" name="email" required /><br><br>
+      Age: <input type="number" name="age" required /><br><br>
+      <button type="submit">Register</button>
+    </form>
+  `);
+});
+
+// Handle Form Submission
+app.post('/register', (req, res) => {
+  const { name, email, age } = req.body;
+
+  if (!/^[A-Za-z ]+$/.test(name)) {
+    return res.send('Invalid name: only alphabets allowed');
+  }
+
+  if (isNaN(age) || age < 18 || age > 60) {
+    return res.send('Invalid age: must be between 18 and 60');
+  }
+
+  res.send(`<h3>Employee Registered Successfully!</h3>
+            <p>Name: ${name}</p>
+            <p>Email: ${email}</p>
+            <p>Age: ${age}</p>`);
+});
+
+// Start Server
+app.listen(3000, () => {
+  console.log('Server running at http://localhost:3000');
+});
+
+
+Q2
+<!DOCTYPE html>
+<html ng-app="mathApp">
+<head>
+  <title>Math Operations with AngularJS</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+</head>
+<body ng-controller="MathController">
+
+  <h2>Math Operations</h2>
+
+  <p>Enter First Number: <input type="number" ng-model="num1"></p>
+  <p>Enter Second Number: <input type="number" ng-model="num2"></p>
+
+  <button ng-click="calculate()">Calculate</button>
+
+  <p>Addition: {{ result.add }}</p>
+  <p>Multiplication: {{ result.multiply }}</p>
+
+  <script>
+    // Define the module
+    var app = angular.module('mathApp', []);
+
+    // Define the service
+    app.service('mathOperation', function() {
+      this.add = function(a, b) {
+        return a + b;
+      };
+      this.multiply = function(a, b) {
+        return a * b;
+      };
+    });
+
+    // Define the controller
+    app.controller('MathController', function($scope, mathOperation) {
+      $scope.result = { add: 0, multiply: 0 };
+
+      $scope.calculate = function() {
+        var a = parseFloat($scope.num1);
+        var b = parseFloat($scope.num2);
+
+        $scope.result.add = mathOperation.add(a, b);
+        $scope.result.multiply = mathOperation.multiply(a, b);
+      };
+    });
+  </script>
+
+</body>
+</html>
